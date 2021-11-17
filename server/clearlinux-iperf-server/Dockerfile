@@ -1,0 +1,10 @@
+FROM clearlinux/iperf
+
+LABEL maintainer="Mateusz Smendowski"
+LABEL version="1.0"
+
+ARG IPERF_SERVER_INSTANCE_PORT
+
+CMD [ "-s" ]
+
+EXPOSE ${IPERF_SERVER_INSTANCE_PORT}:${IPERF_SERVER_INSTANCE_PORT}

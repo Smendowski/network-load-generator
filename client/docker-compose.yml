@@ -1,0 +1,62 @@
+version: '3.9'
+services:
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    environment:
+      - INFLUX_DB=telegraf_output_db
+      - INDLUXDB_ADMIN_ENABLED="true"
+      - INFLUXDB_ADMIN_USER=admin
+      - INFLUXDB_ADMIN_PASSWORD=secretpassword
+      - INFLUXDB_USER=telegraf
+      - INFLUX_USER_PASSWORD=secretpassword
+    ports:
+      - "8086:8086"
+
+  # Influx CLI to setup Influx Instance
+  influxdb_cli:
+    links:
+      - influxdb
+    image: influxdb:latest
+    environment: 
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=secretpassword
+      - DOCKER_INFLUXDB_INIT_ORG=myorg
+      - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
+      #- INFLUXD_TLS_CERT=/etc/ssl/influxdb-selfsigned.crt
+      #- INFLUXD_TLS_KEY=/etc/ssl/influxdb-selfsigned.key
+    entrypoint: ["./entrypoint.sh"]
+    restart: on-failure:10
+    depends_on:
+      - influxdb
+
+  telegraf:
+    image: telegraf
+    links:
+     - influxdb
+    volumes:
+     - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    environment: 
+    #   # These parameters should be aligned with mounted telegraf.conf file.
+     - DOCKER_INFLUXDB_INIT_ORG=myorg
+     - DOCKER_INFLUXDB_INIT_BUCKET=mybucket
+     - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=mytoken
+    depends_on:
+     - influxdb_cli
+
+  grafana:
+    image: grafana/grafana
+    links:
+      - influxdb
+    container_name: grafana
+    environment:
+     - GF_SECURITY_ADMIN_USER=admin
+     - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - influxdb
+      

@@ -16,10 +16,13 @@ services:
       - "8086:8086"
 
   telegraf:
-    image: telegraf
+    build:
+      context: ./telegraf-iperf-client
+      args:
+        - IPERF_CLIENT_INSTANCE_PORT=5001
     links:
      - influxdb
-    container_name: telegraf
+    container_name: telegraf-iperf-client
     volumes:
      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
     environment: 

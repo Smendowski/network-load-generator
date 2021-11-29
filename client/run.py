@@ -50,4 +50,4 @@ if __name__ == "__main__":
     if args.build:
         subprocess.run("docker-compose up --build", shell=True)
     else:
-        subprocess.run("docker-compose up --build", shell=True)
+        subprocess.run("docker-compose up", shell=True)
